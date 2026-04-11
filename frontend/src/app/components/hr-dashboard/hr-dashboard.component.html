@@ -1,0 +1,298 @@
+<div class="dashboard-wrapper">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>🏢 HR Dashboard</h1>
+      <p>Manage employees, approve registrations &amp; view Camunda tasks</p>
+    </div>
+    <a [href]="camundaTasklistUrl" target="_blank" class="btn-camunda">
+      🔗 Open Camunda Tasklist
+    </a>
+  </div>
+
+  <!-- Notification -->
+  <div *ngIf="msg" class="alert" [class.alert-success]="msgType==='success'" [class.alert-error]="msgType==='error'">
+    {{ msg }}
+  </div>
+
+  <!-- Tab Nav -->
+  <div class="tab-nav">
+    <button [class.active]="activeTab==='overview'"  (click)="setTab('overview')">📊 Overview</button>
+    <button [class.active]="activeTab==='employees'" (click)="setTab('employees')">👥 Employees</button>
+    <button [class.active]="activeTab==='tasks'"     (click)="setTab('tasks')">
+      ✅ Approval Tasks <span class="badge" *ngIf="tasks.length">{{ tasks.length }}</span>
+    </button>
+    <button [class.active]="activeTab==='add'"       (click)="setTab('add')">➕ Add Employee</button>
+  </div>
+
+  <!-- ── OVERVIEW TAB ─────────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='overview'">
+    <div class="stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ totalEmployees }}</div>
+        <div class="stat-label">Total Employees</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">{{ activeCount }}</div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-value">{{ pendingCount }}</div>
+        <div class="stat-label">Pending Approval</div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value">{{ tasks.length }}</div>
+        <div class="stat-label">Camunda Tasks</div>
+      </div>
+    </div>
+
+    <div class="overview-grid">
+      <!-- Pending approvals quick view -->
+      <div class="card">
+        <div class="card-header">
+          <h3>⏳ Pending Approvals</h3>
+          <button class="btn-link" (click)="setTab('tasks')">View all tasks →</button>
+        </div>
+        <div class="empty-state" *ngIf="pendingEmployees.length===0">No pending approvals 🎉</div>
+        <div class="mini-list" *ngFor="let emp of pendingEmployees.slice(0,5)">
+          <span class="emp-avatar">{{ emp.firstName[0] }}{{ emp.lastName[0] }}</span>
+          <span class="emp-name">{{ emp.firstName }} {{ emp.lastName }}</span>
+          <span class="emp-dept">{{ emp.department }}</span>
+          <span class="status-badge status-pending">PENDING</span>
+        </div>
+      </div>
+
+      <!-- Role breakdown -->
+      <div class="card">
+        <div class="card-header"><h3>👥 Role Breakdown</h3></div>
+        <div class="role-chart">
+          <div class="role-row">
+            <span>HR</span>
+            <div class="bar-wrap"><div class="bar bar-hr" [style.width.%]="totalEmployees ? hrCount/totalEmployees*100 : 0"></div></div>
+            <span class="bar-count">{{ hrCount }}</span>
+          </div>
+          <div class="role-row">
+            <span>Manager</span>
+            <div class="bar-wrap"><div class="bar bar-mgr" [style.width.%]="totalEmployees ? managerCount/totalEmployees*100 : 0"></div></div>
+            <span class="bar-count">{{ managerCount }}</span>
+          </div>
+          <div class="role-row">
+            <span>Employee</span>
+            <div class="bar-wrap"><div class="bar bar-emp" [style.width.%]="totalEmployees ? (totalEmployees-hrCount-managerCount)/totalEmployees*100 : 0"></div></div>
+            <span class="bar-count">{{ totalEmployees - hrCount - managerCount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EMPLOYEES TAB ────────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='employees'">
+    <!-- Filters -->
+    <div class="filter-bar">
+      <input type="text" [(ngModel)]="searchTerm" placeholder="🔍 Search by name, email, department..." class="search-input"/>
+      <select [(ngModel)]="filterRole" class="filter-select">
+        <option value="">All Roles</option>
+        <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+      </select>
+      <select [(ngModel)]="filterStatus" class="filter-select">
+        <option value="">All Statuses</option>
+        <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+      </select>
+      <span class="result-count">{{ filteredEmployees.length }} result(s)</span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">Loading employees...</div>
+
+    <!-- Edit Panel -->
+    <div class="edit-panel" *ngIf="selectedEmployee">
+      <h3>✏️ Edit: {{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}</h3>
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input formControlName="firstName" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input formControlName="lastName" class="form-control"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone</label>
+            <input formControlName="phone" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <select formControlName="department" class="form-control">
+              <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Designation</label>
+            <input formControlName="designation" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select formControlName="role" class="form-control">
+              <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select formControlName="status" class="form-control">
+              <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="submit" class="btn-primary" [disabled]="editForm.invalid">Save Changes</button>
+          <button type="button" class="btn-secondary" (click)="selectedEmployee=null">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Employee Table -->
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th><th>Email</th><th>Department</th>
+            <th>Designation</th><th>Role</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let emp of filteredEmployees">
+            <td>
+              <div class="emp-cell">
+                <span class="emp-avatar sm">{{ emp.firstName[0] }}{{ emp.lastName[0] }}</span>
+                {{ emp.firstName }} {{ emp.lastName }}
+              </div>
+            </td>
+            <td>{{ emp.email }}</td>
+            <td>{{ emp.department ?? '—' }}</td>
+            <td>{{ emp.designation ?? '—' }}</td>
+            <td><span class="role-badge role-{{emp.role.toLowerCase()}}">{{ emp.role }}</span></td>
+            <td><span class="status-badge status-{{emp.status.toLowerCase()}}">{{ emp.status }}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon btn-edit" (click)="openEdit(emp)" title="Edit">✏️</button>
+                <button class="btn-icon btn-del" (click)="deleteEmployee(emp.id)" title="Deactivate">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredEmployees.length===0">
+            <td colspan="7" class="empty-row">No employees found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── TASKS TAB ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='tasks'">
+    <div class="task-header">
+      <h3>Camunda HR Approval Tasks</h3>
+      <div>
+        <button class="btn-secondary" (click)="loadTasks()">🔄 Refresh</button>
+        <a [href]="camundaTasklistUrl" target="_blank" class="btn-camunda ml">Open in Tasklist</a>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="taskLoading">Loading tasks from Camunda engine...</div>
+
+    <div class="empty-state" *ngIf="!taskLoading && tasks.length===0">
+      ✅ No pending HR approval tasks
+    </div>
+
+    <div class="task-grid" *ngIf="!taskLoading">
+      <div class="task-card" *ngFor="let task of tasks">
+        <div class="task-card-header">
+          <span class="task-name">{{ task.taskName }}</span>
+          <span class="task-date">{{ task.created | date:'short' }}</span>
+        </div>
+        <div class="task-detail">
+          <span class="label">Process ID:</span>
+          <code>{{ task.processInstanceId }}</code>
+        </div>
+        <div class="task-detail">
+          <span class="label">Task ID:</span>
+          <code>{{ task.taskId }}</code>
+        </div>
+        <div class="task-actions">
+          <button class="btn-approve" (click)="approveTask(task.taskId, true)">✅ Approve</button>
+          <button class="btn-reject"  (click)="approveTask(task.taskId, false)">❌ Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADD EMPLOYEE TAB ──────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='add'">
+    <div class="card form-card">
+      <h3>➕ Add New Employee (starts Camunda process)</h3>
+      <form [formGroup]="addForm" (ngSubmit)="addEmployee()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input formControlName="firstName" class="form-control" placeholder="John"/>
+          </div>
+          <div class="form-group">
+            <label>Last Name *</label>
+            <input formControlName="lastName" class="form-control" placeholder="Doe"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" formControlName="email" class="form-control" placeholder="john@company.com"/>
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input formControlName="phone" class="form-control" placeholder="+1-555-0100"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Department *</label>
+            <select formControlName="department" class="form-control">
+              <option value="">Select...</option>
+              <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Designation *</label>
+            <input formControlName="designation" class="form-control" placeholder="Software Engineer"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Role</label>
+            <select formControlName="role" class="form-control">
+              <option value="EMPLOYEE">Employee</option>
+              <option value="MANAGER">Manager</option>
+              <option value="HR">HR</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" formControlName="password" class="form-control" placeholder="Min 6 characters"/>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary" [disabled]="addForm.invalid">
+          🚀 Start Registration Process
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

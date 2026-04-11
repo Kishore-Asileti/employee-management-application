@@ -1,0 +1,80 @@
+<div class="dashboard-wrapper">
+  <div class="page-header">
+    <div>
+      <h1>👤 Employee Dashboard</h1>
+      <p>Welcome back, {{ auth.currentUser?.fullName }}</p>
+    </div>
+    <a [href]="camundaTasklistUrl" target="_blank" class="btn-camunda">🔗 My Tasks</a>
+  </div>
+
+  <div class="tab-nav">
+    <button [class.active]="activeTab==='profile'" (click)="activeTab='profile'">👤 My Profile</button>
+    <button [class.active]="activeTab==='list'"    (click)="activeTab='list'">👥 View Colleagues</button>
+  </div>
+
+  <!-- Profile Tab -->
+  <div *ngIf="activeTab==='profile'">
+    <div class="loading-state" *ngIf="loading">Loading profile...</div>
+    <div class="profile-card" *ngIf="profile && !loading">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          {{ profile.firstName[0] }}{{ profile.lastName[0] }}
+        </div>
+        <div class="profile-meta">
+          <h2>{{ profile.firstName }} {{ profile.lastName }}</h2>
+          <p class="profile-title">{{ profile.designation }} · {{ profile.department }}</p>
+          <div class="profile-badges">
+            <span class="role-badge role-{{profile.role.toLowerCase()}}">{{ profile.role }}</span>
+            <span class="status-badge status-{{profile.status.toLowerCase()}}">{{ profile.status }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-details">
+        <div class="detail-row">
+          <span class="detail-label">📧 Email</span>
+          <span class="detail-value">{{ profile.email }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">📱 Phone</span>
+          <span class="detail-value">{{ profile.phone || '—' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🏢 Department</span>
+          <span class="detail-value">{{ profile.department || '—' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">💼 Designation</span>
+          <span class="detail-value">{{ profile.designation || '—' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🗓️ Joined</span>
+          <span class="detail-value">{{ profile.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="profile.camundaProcessInstanceId">
+          <span class="detail-label">⚙️ Process ID</span>
+          <span class="detail-value"><code>{{ profile.camundaProcessInstanceId }}</code></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colleagues Tab -->
+  <div *ngIf="activeTab==='list'">
+    <div class="filter-bar">
+      <input [(ngModel)]="searchTerm" placeholder="🔍 Search colleagues..." class="search-input"/>
+    </div>
+    <div class="colleagues-grid">
+      <div class="colleague-card" *ngFor="let emp of filteredEmployees">
+        <div class="colleague-avatar">{{ emp.firstName[0] }}{{ emp.lastName[0] }}</div>
+        <div class="colleague-info">
+          <div class="colleague-name">{{ emp.firstName }} {{ emp.lastName }}</div>
+          <div class="colleague-role">{{ emp.designation }}</div>
+          <div class="colleague-dept">{{ emp.department }}</div>
+          <span class="role-badge role-{{emp.role.toLowerCase()}} mt-sm">{{ emp.role }}</span>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="filteredEmployees.length===0">No colleagues found.</div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0i3htat" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+  <bpmn:collaboration id="Employee_Management">
+    <bpmn:participant id="Employee" name="Employee" processRef="EmployeeManager" />
+    <bpmn:group id="Task_HR_Actions" categoryValueRef="CategoryValue_04uyvmv" />
+    <bpmn:group id="Group_00uleb9" />
+  </bpmn:collaboration>
+  <bpmn:process id="EmployeeManager" name="Employee management system" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:laneSet id="LaneSet_0l0mekc">
+      <bpmn:lane id="Lane_0wtlei8">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_loginpage</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_NewOrExisting</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Register</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidateRegistration</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_ValidationResult</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_FixErrors</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SendWelcomeEmail</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HRApproval</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_HRDecision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ActivateAccount</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Rejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_04xoktc">
+        <bpmn:flowNodeRef>Task_EnterCredentials</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AuthenticateUser</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AuthError</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_AuthResult</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_RoleCheck</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HRDashboard</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ManagerDashboard</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_EmployeeDashboard</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ViewEmployeeList</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_EmployeeSession</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_HRAction</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HR_AddEmployee</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HR_EditEmployee</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HR_DeleteEmployee</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HR_ViewAll</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HR_SaveChanges</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_HRSession</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_ManagerAction</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Mgr_EditEmployee</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Mgr_ViewAll</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Mgr_DeleteEmployee</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Mgr_GenerateReport</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Mgr_SaveChanges</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_ManagerSession</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_1" name="Employee visits portal">
+      <bpmn:outgoing>Flow_1bsgvla</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_loginpage" name="Login/Register">
+      <bpmn:incoming>Flow_1bsgvla</bpmn:incoming>
+      <bpmn:outgoing>Flow_1lvp2rw</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_NewOrExisting" name="New or Existing Employee" default="Flow_gw1_to_authenticate">
+      <bpmn:incoming>Flow_1lvp2rw</bpmn:incoming>
+      <bpmn:outgoing>Flow_1s5c6lw</bpmn:outgoing>
+      <bpmn:outgoing>Flow_gw1_to_authenticate</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_Register" name="Fill Registration Form">
+      <bpmn:incoming>Flow_1s5c6lw</bpmn:incoming>
+      <bpmn:incoming>Flow_1x2veep</bpmn:incoming>
+      <bpmn:outgoing>Flow_0t8zx7k</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_ValidateRegistration" name="Validate &#38; Save&#10;Employee to DB" camunda:delegateExpression="${validateRegistrationDelegate}">
+      <bpmn:incoming>Flow_0t8zx7k</bpmn:incoming>
+      <bpmn:outgoing>Flow_1c5als8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="GW_ValidationResult" name="Registration Valid?" default="Flow_invalid_to_error">
+      <bpmn:incoming>Flow_1c5als8</bpmn:incoming>
+      <bpmn:outgoing>Flow_invalid_to_error</bpmn:outgoing>
+      <bpmn:outgoing>Flow_valid_to_notify</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_FixErrors" name="Show Validation Errors&#10;to Employee" camunda:assignee="${userId}">
+      <bpmn:incoming>Flow_invalid_to_error</bpmn:incoming>
+      <bpmn:outgoing>Flow_1x2veep</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_SendWelcomeEmail" name="Send Welcome&#10;Email to Employee" camunda:class="com.company.EmailService">
+      <bpmn:incoming>Flow_valid_to_notify</bpmn:incoming>
+      <bpmn:outgoing>Flow_17wb5x0</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_HRApproval" name="HR Reviews &#38;&#10;Approves New Employee" camunda:candidateGroups="hr">
+      <bpmn:incoming>Flow_17wb5x0</bpmn:incoming>
+      <bpmn:outgoing>Flow_0kdx1gy</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_HRDecision" name="HR Approved?" default="Flow_hr_rejected">
+      <bpmn:incoming>Flow_0kdx1gy</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_rejected</bpmn:outgoing>
+      <bpmn:outgoing>Flow_hr_approved</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_EnterCredentials" name="Enter Email &#38; Password">
+      <bpmn:incoming>Flow_gw1_to_authenticate</bpmn:incoming>
+      <bpmn:incoming>Flow_activate_to_login_redirect</bpmn:incoming>
+      <bpmn:incoming>Flow_1tua85b</bpmn:incoming>
+      <bpmn:outgoing>Flow_credentials_to_auth</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1bsgvla" sourceRef="StartEvent_1" targetRef="Task_loginpage" />
+    <bpmn:sequenceFlow id="Flow_1lvp2rw" sourceRef="Task_loginpage" targetRef="Gateway_NewOrExisting" />
+    <bpmn:sequenceFlow id="Flow_1s5c6lw" name="New Employee" sourceRef="Gateway_NewOrExisting" targetRef="Task_Register">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isNewEmployee == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_gw1_to_authenticate" name="Existing Employee" sourceRef="Gateway_NewOrExisting" targetRef="Task_EnterCredentials" />
+    <bpmn:sequenceFlow id="Flow_1x2veep" sourceRef="Task_FixErrors" targetRef="Task_Register" />
+    <bpmn:sequenceFlow id="Flow_0t8zx7k" sourceRef="Task_Register" targetRef="Task_ValidateRegistration" />
+    <bpmn:sequenceFlow id="Flow_1c5als8" sourceRef="Task_ValidateRegistration" targetRef="GW_ValidationResult" />
+    <bpmn:sequenceFlow id="Flow_invalid_to_error" name="Invalid" sourceRef="GW_ValidationResult" targetRef="Task_FixErrors" />
+    <bpmn:sequenceFlow id="Flow_valid_to_notify" name="Valid" sourceRef="GW_ValidationResult" targetRef="Task_SendWelcomeEmail">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${validationResult == 'VALID'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_17wb5x0" sourceRef="Task_SendWelcomeEmail" targetRef="Task_HRApproval" />
+    <bpmn:sequenceFlow id="Flow_0kdx1gy" sourceRef="Task_HRApproval" targetRef="GW_HRDecision" />
+    <bpmn:sequenceFlow id="Flow_hr_rejected" name="Rejected" sourceRef="GW_HRDecision" targetRef="End_Rejected" />
+    <bpmn:sequenceFlow id="Flow_hr_approved" name="Approved" sourceRef="GW_HRDecision" targetRef="Task_ActivateAccount">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hrApproved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Task_AuthenticateUser" name="Authenticate User&#10;Check Credentials &#38; Role" camunda:class="com.company.AuthService">
+      <bpmn:incoming>Flow_credentials_to_auth</bpmn:incoming>
+      <bpmn:outgoing>Flow_auth_to_gw4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_credentials_to_auth" sourceRef="Task_EnterCredentials" targetRef="Task_AuthenticateUser" />
+    <bpmn:sequenceFlow id="Flow_activate_to_login_redirect" sourceRef="Task_ActivateAccount" targetRef="Task_EnterCredentials" />
+    <bpmn:serviceTask id="Task_ActivateAccount" name="Activate Employee&#10;Account in System" camunda:class="com.company.AccountService">
+      <bpmn:incoming>Flow_hr_approved</bpmn:incoming>
+      <bpmn:outgoing>Flow_activate_to_login_redirect</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_auth_to_gw4" sourceRef="Task_AuthenticateUser" targetRef="GW_AuthResult" />
+    <bpmn:sequenceFlow id="Flow_1tua85b" sourceRef="Task_AuthError" targetRef="Task_EnterCredentials" />
+    <bpmn:userTask id="Task_AuthError" name="Show Invalid Login&#10;Error Message" camunda:assignee="${userId}">
+      <bpmn:incoming>Flow_auth_fail</bpmn:incoming>
+      <bpmn:outgoing>Flow_1tua85b</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_AuthResult" name="Authentication&#10;Successful?" default="Flow_auth_fail">
+      <bpmn:incoming>Flow_auth_to_gw4</bpmn:incoming>
+      <bpmn:outgoing>Flow_auth_fail</bpmn:outgoing>
+      <bpmn:outgoing>Flow_auth_success</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_auth_fail" name="Failed" sourceRef="GW_AuthResult" targetRef="Task_AuthError" />
+    <bpmn:exclusiveGateway id="GW_RoleCheck" name="Check User Role" default="Flow_role_employee">
+      <bpmn:incoming>Flow_auth_success</bpmn:incoming>
+      <bpmn:outgoing>Flow_role_hr</bpmn:outgoing>
+      <bpmn:outgoing>Flow_role_employee</bpmn:outgoing>
+      <bpmn:outgoing>Flow_role_manager</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_auth_success" name="Success" sourceRef="GW_AuthResult" targetRef="GW_RoleCheck">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${authResult == 'SUCCESS'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Task_HRDashboard" name="HR Dashboard&#10;(View + Edit + Delete)" camunda:candidateGroups="hr">
+      <bpmn:incoming>Flow_role_hr</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_action_gw</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ManagerDashboard" name="Manager Dashboard&#10;(View + Edit + Delete + Reports)" camunda:candidateGroups="manager">
+      <bpmn:incoming>Flow_role_manager</bpmn:incoming>
+      <bpmn:outgoing>Flow_mgr_action_gw</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_EmployeeDashboard" name="Employee Dashboard&#10;(View Only)" camunda:assignee="${userId}">
+      <bpmn:incoming>Flow_role_employee</bpmn:incoming>
+      <bpmn:outgoing>Flow_emp_view</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_role_hr" name="Role = HR" sourceRef="GW_RoleCheck" targetRef="Task_HRDashboard">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${userRole == 'HR'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_role_employee" name="Role = Employee" sourceRef="GW_RoleCheck" targetRef="Task_EmployeeDashboard" />
+    <bpmn:sequenceFlow id="Flow_role_manager" name="Role = Manager" sourceRef="GW_RoleCheck" targetRef="Task_ManagerDashboard">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${userRole == 'MANAGER'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Task_ViewEmployeeList" name="Fetch &#38; Display&#10;All Employees (Read Only)" camunda:class="com.company.EmployeeReadService">
+      <bpmn:incoming>Flow_emp_view</bpmn:incoming>
+      <bpmn:outgoing>Flow_view_done_emp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_Rejected" name="Registration Rejected&#10;(Notify Employee)">
+      <bpmn:incoming>Flow_hr_rejected</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="End_EmployeeSession" name="Employee Session End&#10;(Logout)">
+      <bpmn:incoming>Flow_view_done_emp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_emp_view" sourceRef="Task_EmployeeDashboard" targetRef="Task_ViewEmployeeList" />
+    <bpmn:sequenceFlow id="Flow_view_done_emp" sourceRef="Task_ViewEmployeeList" targetRef="End_EmployeeSession" />
+    <bpmn:exclusiveGateway id="GW_HRAction" name="HR Action?" default="Flow_hr_view">
+      <bpmn:incoming>Flow_hr_action_gw</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_add</bpmn:outgoing>
+      <bpmn:outgoing>Flow_hr_view</bpmn:outgoing>
+      <bpmn:outgoing>Flow_hr_edit</bpmn:outgoing>
+      <bpmn:outgoing>Flow_hr_delete</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_HR_AddEmployee" name="Add New Employee&#10;Record (All Categories)" camunda:candidateGroups="hr">
+      <bpmn:incoming>Flow_hr_add</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_add_save</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_hr_action_gw" sourceRef="Task_HRDashboard" targetRef="GW_HRAction" />
+    <bpmn:sequenceFlow id="Flow_hr_add" name="Add" sourceRef="GW_HRAction" targetRef="Task_HR_AddEmployee">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hrAction == 'ADD'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="Task_HR_EditEmployee" name="Edit Employee Details&#10;(Category, Dept, Role, Status)" camunda:candidateGroups="hr">
+      <bpmn:incoming>Flow_hr_edit</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_edit_save</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_HR_DeleteEmployee" name="Delete / Deactivate&#10;Employee Record" camunda:candidateGroups="hr">
+      <bpmn:incoming>Flow_hr_delete</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_delete_confirm</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_HR_ViewAll" name="View All Employee&#10;Categories &#38; Records" camunda:class="com.company.EmployeeReadService">
+      <bpmn:incoming>Flow_hr_view</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_view_done</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_hr_view" name="View" sourceRef="GW_HRAction" targetRef="Task_HR_ViewAll" />
+    <bpmn:sequenceFlow id="Flow_hr_edit" name="Edit" sourceRef="GW_HRAction" targetRef="Task_HR_EditEmployee">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hrAction == 'EDIT'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_hr_delete" name="Delete" sourceRef="GW_HRAction" targetRef="Task_HR_DeleteEmployee">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${hrAction == 'DELETE'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="Task_HR_SaveChanges" name="Save HR Changes to DB&#10;+ Log Audit Trail" camunda:class="com.company.EmployeeWriteService">
+      <bpmn:incoming>Flow_hr_add_save</bpmn:incoming>
+      <bpmn:incoming>Flow_hr_edit_save</bpmn:incoming>
+      <bpmn:incoming>Flow_hr_delete_confirm</bpmn:incoming>
+      <bpmn:incoming>Flow_hr_view_done</bpmn:incoming>
+      <bpmn:outgoing>Flow_hr_done</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_hr_add_save" sourceRef="Task_HR_AddEmployee" targetRef="Task_HR_SaveChanges" />
+    <bpmn:sequenceFlow id="Flow_hr_edit_save" sourceRef="Task_HR_EditEmployee" targetRef="Task_HR_SaveChanges" />
+    <bpmn:sequenceFlow id="Flow_hr_delete_confirm" sourceRef="Task_HR_DeleteEmployee" targetRef="Task_HR_SaveChanges" />
+    <bpmn:sequenceFlow id="Flow_hr_view_done" sourceRef="Task_HR_ViewAll" targetRef="Task_HR_SaveChanges" />
+    <bpmn:endEvent id="End_HRSession" name="HR Session End&#10;(Logout)">
+      <bpmn:incoming>Flow_hr_done</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_hr_done" sourceRef="Task_HR_SaveChanges" targetRef="End_HRSession" />
+    <bpmn:exclusiveGateway id="GW_ManagerAction" name="Manager Action?" default="Flow_mgr_view">
+      <bpmn:incoming>Flow_mgr_action_gw</bpmn:incoming>
+      <bpmn:outgoing>Flow_mgr_edit</bpmn:outgoing>
+      <bpmn:outgoing>Flow_mgr_view</bpmn:outgoing>
+      <bpmn:outgoing>Flow_mgr_delete</bpmn:outgoing>
+      <bpmn:outgoing>Flow_mgr_report</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_Mgr_EditEmployee" name="Edit Employee Category,&#10;Role or Department" camunda:candidateGroups="manager">
+      <bpmn:incoming>Flow_mgr_edit</bpmn:incoming>
+      <bpmn:outgoing>Flow_mgr_edit_save</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_Mgr_ViewAll" name="View All Employee&#10;Categories &#38; Departments" camunda:class="com.company.EmployeeReadService">
+      <bpmn:incoming>Flow_mgr_view</bpmn:incoming>
+      <bpmn:outgoing>Flow_mgr_view_done</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_Mgr_DeleteEmployee" name="Delete / Terminate&#10;Employee Record" camunda:candidateGroups="manager">
+      <bpmn:incoming>Flow_mgr_delete</bpmn:incoming>
+      <bpmn:outgoing>Flow_mgr_delete_confirm</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_Mgr_GenerateReport" name="Generate Employee&#10;Department Report" camunda:class="com.company.ReportService">
+      <bpmn:incoming>Flow_mgr_report</bpmn:incoming>
+      <bpmn:outgoing>Flow_mgr_report_done</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Mgr_SaveChanges" name="Save Manager Changes to DB&#10;+ Log Audit Trail" camunda:class="com.company.EmployeeWriteService">
+      <bpmn:incoming>Flow_mgr_edit_save</bpmn:incoming>
+      <bpmn:incoming>Flow_mgr_delete_confirm</bpmn:incoming>
+      <bpmn:incoming>Flow_mgr_report_done</bpmn:incoming>
+      <bpmn:incoming>Flow_mgr_view_done</bpmn:incoming>
+      <bpmn:outgoing>Flow_mgr_done</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_ManagerSession" name="Manager Session End&#10;(Logout)">
+      <bpmn:incoming>Flow_mgr_done</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_mgr_action_gw" sourceRef="Task_ManagerDashboard" targetRef="GW_ManagerAction" />
+    <bpmn:sequenceFlow id="Flow_mgr_edit" name="Edit" sourceRef="GW_ManagerAction" targetRef="Task_Mgr_EditEmployee">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${managerAction == 'EDIT'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_mgr_view" name="View" sourceRef="GW_ManagerAction" targetRef="Task_Mgr_ViewAll" />
+    <bpmn:sequenceFlow id="Flow_mgr_delete" name="Delete" sourceRef="GW_ManagerAction" targetRef="Task_Mgr_DeleteEmployee">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${managerAction == 'DELETE'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_mgr_report" name="Report" sourceRef="GW_ManagerAction" targetRef="Task_Mgr_GenerateReport">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${managerAction == 'REPORT'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_mgr_edit_save" sourceRef="Task_Mgr_EditEmployee" targetRef="Task_Mgr_SaveChanges" />
+    <bpmn:sequenceFlow id="Flow_mgr_delete_confirm" sourceRef="Task_Mgr_DeleteEmployee" targetRef="Task_Mgr_SaveChanges" />
+    <bpmn:sequenceFlow id="Flow_mgr_report_done" sourceRef="Task_Mgr_GenerateReport" targetRef="Task_Mgr_SaveChanges" />
+    <bpmn:sequenceFlow id="Flow_mgr_view_done" sourceRef="Task_Mgr_ViewAll" targetRef="Task_Mgr_SaveChanges" />
+    <bpmn:sequenceFlow id="Flow_mgr_done" sourceRef="Task_Mgr_SaveChanges" targetRef="End_ManagerSession" />
+  </bpmn:process>
+  <bpmn:category id="Category_0zzcmw4">
+    <bpmn:categoryValue id="CategoryValue_04uyvmv" value="HR Actions" />
+  </bpmn:category>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Employee_Management">
+      <bpmndi:BPMNShape id="Participant_1s7b1hr_di" bpmnElement="Employee" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="2910" height="2090" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_04xoktc_di" bpmnElement="Lane_04xoktc" isHorizontal="true" bioc:stroke="#5b176d" bioc:fill="#e1bee7" color:background-color="#e1bee7" color:border-color="#5b176d">
+        <dc:Bounds x="190" y="550" width="2880" height="1620" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0wtlei8_di" bpmnElement="Lane_0wtlei8" isHorizontal="true" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+        <dc:Bounds x="190" y="80" width="2880" height="470" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="232" y="372" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="213" y="415" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zki431_di" bpmnElement="Task_loginpage" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+        <dc:Bounds x="330" y="350" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1fvoyw1_di" bpmnElement="Gateway_NewOrExisting" isMarkerVisible="true">
+        <dc:Bounds x="475" y="365" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="461" y="327.5" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_03z1i30_di" bpmnElement="Task_Register" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+        <dc:Bounds x="690" y="350" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0p5kt32_di" bpmnElement="Task_ValidateRegistration">
+        <dc:Bounds x="920" y="350" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GW_ValidationResult" bpmnElement="GW_ValidationResult" isMarkerVisible="true">
+        <dc:Bounds x="945" y="225" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="940" y="188" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_FixErrors" bpmnElement="Task_FixErrors">
+        <dc:Bounds x="670" y="220" width="140" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_WelcomeEmail" bpmnElement="Task_SendWelcomeEmail">
+        <dc:Bounds x="1100" y="210" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_HRApproval" bpmnElement="Task_HRApproval" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00">
+        <dc:Bounds x="1520" y="210" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GW_HRDecision" bpmnElement="GW_HRDecision" isMarkerVisible="true">
+        <dc:Bounds x="1905" y="225" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1894" y="201" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1d8g2wh_di" bpmnElement="Task_EnterCredentials" bioc:stroke="#205022" bioc:fill="#c8e6c9" color:background-color="#c8e6c9" color:border-color="#205022">
+        <dc:Bounds x="690" y="1380" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AuthenticateUser" bpmnElement="Task_AuthenticateUser">
+        <dc:Bounds x="900" y="1380" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ActivateAccount" bpmnElement="Task_ActivateAccount">
+        <dc:Bounds x="1860" y="420" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_AuthError" bpmnElement="Task_AuthError">
+        <dc:Bounds x="900" y="1770" width="140" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GW_AuthResult" bpmnElement="GW_AuthResult" isMarkerVisible="true">
+        <dc:Bounds x="945" y="1585" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="865" y="1596" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GW_RoleCheck" bpmnElement="GW_RoleCheck" isMarkerVisible="true">
+        <dc:Bounds x="1175" y="1585" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1218" y="1623" width="84" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_HRDashboard" bpmnElement="Task_HRDashboard" bioc:stroke="#6b3c00" bioc:fill="#ffe0b2" color:background-color="#ffe0b2" color:border-color="#6b3c00">
+        <dc:Bounds x="1420" y="1570" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ManagerDashboard" bpmnElement="Task_ManagerDashboard" bioc:stroke="#831311" bioc:fill="#ffcdd2" color:background-color="#ffcdd2" color:border-color="#831311">
+        <dc:Bounds x="1420" y="870" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_EmployeeDashboard" bpmnElement="Task_EmployeeDashboard" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="1420" y="1990" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_ViewEmployeeList" bpmnElement="Task_ViewEmployeeList">
+        <dc:Bounds x="2020" y="1990" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Rejected" bpmnElement="End_Rejected">
+        <dc:Bounds x="2882" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2856" y="180" width="88" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_EmployeeSession" bpmnElement="End_EmployeeSession">
+        <dc:Bounds x="2882" y="2012" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2868" y="1962" width="63" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GW_HRAction" bpmnElement="GW_HRAction" isMarkerVisible="true">
+        <dc:Bounds x="1675" y="1585" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1712" y="1623" width="56" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_HR_AddEmployee" bpmnElement="Task_HR_AddEmployee">
+        <dc:Bounds x="1965" y="1575" width="130" height="70" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_HR_EditEmployee" bpmnElement="Task_HR_EditEmployee">
+        <dc:Bounds x="1965" y="1695" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_HR_DeleteEmployee" bpmnElement="Task_HR_DeleteEmployee">
+        <dc:Bounds x="1965" y="1815" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_HR_ViewAll" bpmnElement="Task_HR_ViewAll">
+        <dc:Bounds x="1965" y="1435" width="130" height="70" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_HR_SaveChanges" bpmnElement="Task_HR_SaveChanges">
+        <dc:Bounds x="2310" y="1570" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_HRSession" bpmnElement="End_HRSession">
+        <dc:Bounds x="2882" y="1592" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2860" y="1635" width="81" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_GW_ManagerAction" bpmnElement="GW_ManagerAction" isMarkerVisible="true">
+        <dc:Bounds x="1675" y="885" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1718" y="929" width="83" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Mgr_EditEmployee" bpmnElement="Task_Mgr_EditEmployee">
+        <dc:Bounds x="1965" y="880" width="130" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Mgr_ViewAll" bpmnElement="Task_Mgr_ViewAll">
+        <dc:Bounds x="1965" y="730" width="130" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Mgr_DeleteEmployee" bpmnElement="Task_Mgr_DeleteEmployee">
+        <dc:Bounds x="1965" y="1030" width="130" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Mgr_GenerateReport" bpmnElement="Task_Mgr_GenerateReport">
+        <dc:Bounds x="1965" y="1180" width="130" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Mgr_SaveChanges" bpmnElement="Task_Mgr_SaveChanges">
+        <dc:Bounds x="2370" y="870" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_ManagerSession" bpmnElement="End_ManagerSession">
+        <dc:Bounds x="2882" y="892" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2865" y="935" width="86" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1bsgvla_di" bpmnElement="Flow_1bsgvla">
+        <di:waypoint x="268" y="390" />
+        <di:waypoint x="330" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lvp2rw_di" bpmnElement="Flow_1lvp2rw">
+        <di:waypoint x="430" y="390" />
+        <di:waypoint x="475" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1s5c6lw_di" bpmnElement="Flow_1s5c6lw">
+        <di:waypoint x="525" y="390" />
+        <di:waypoint x="690" y="390" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="570" y="372" width="75" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06i5ycv_di" bpmnElement="Flow_gw1_to_authenticate">
+        <di:waypoint x="500" y="415" />
+        <di:waypoint x="500" y="1420" />
+        <di:waypoint x="690" y="1420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="564" y="1386" width="50" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1x2veep_di" bpmnElement="Flow_1x2veep">
+        <di:waypoint x="740" y="280" />
+        <di:waypoint x="740" y="350" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0t8zx7k_di" bpmnElement="Flow_0t8zx7k">
+        <di:waypoint x="790" y="390" />
+        <di:waypoint x="920" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1c5als8_di" bpmnElement="Flow_1c5als8">
+        <di:waypoint x="970" y="350" />
+        <di:waypoint x="970" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1n4w8n9_di" bpmnElement="Flow_invalid_to_error">
+        <di:waypoint x="945" y="250" />
+        <di:waypoint x="810" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="861" y="232" width="33" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gnr37c_di" bpmnElement="Flow_valid_to_notify">
+        <di:waypoint x="995" y="250" />
+        <di:waypoint x="1100" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1036" y="232" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_17wb5x0_di" bpmnElement="Flow_17wb5x0">
+        <di:waypoint x="1240" y="250" />
+        <di:waypoint x="1520" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0kdx1gy_di" bpmnElement="Flow_0kdx1gy">
+        <di:waypoint x="1660" y="250" />
+        <di:waypoint x="1905" y="250" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ewq8wu_di" bpmnElement="Flow_hr_rejected">
+        <di:waypoint x="1955" y="250" />
+        <di:waypoint x="2882" y="250" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2398" y="232" width="44" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0u7441w_di" bpmnElement="Flow_hr_approved">
+        <di:waypoint x="1930" y="275" />
+        <di:waypoint x="1930" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1936" y="346" width="47" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vb75v3_di" bpmnElement="Flow_credentials_to_auth">
+        <di:waypoint x="790" y="1420" />
+        <di:waypoint x="900" y="1420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0a7ob8d_di" bpmnElement="Flow_activate_to_login_redirect">
+        <di:waypoint x="1860" y="460" />
+        <di:waypoint x="740" y="460" />
+        <di:waypoint x="740" y="1380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jfp0ke_di" bpmnElement="Flow_auth_to_gw4">
+        <di:waypoint x="970" y="1460" />
+        <di:waypoint x="970" y="1585" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1tua85b_di" bpmnElement="Flow_1tua85b">
+        <di:waypoint x="900" y="1800" />
+        <di:waypoint x="740" y="1800" />
+        <di:waypoint x="740" y="1460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pjj70m_di" bpmnElement="Flow_auth_fail">
+        <di:waypoint x="970" y="1635" />
+        <di:waypoint x="970" y="1770" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="984" y="1703" width="31" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1u71g8s_di" bpmnElement="Flow_auth_success">
+        <di:waypoint x="995" y="1610" />
+        <di:waypoint x="1175" y="1610" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1064" y="1592" width="42" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10pbxbu_di" bpmnElement="Flow_role_hr">
+        <di:waypoint x="1225" y="1610" />
+        <di:waypoint x="1420" y="1610" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1297" y="1592" width="52" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01ck82l_di" bpmnElement="Flow_role_employee">
+        <di:waypoint x="1200" y="1635" />
+        <di:waypoint x="1200" y="2030" />
+        <di:waypoint x="1420" y="2030" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1217" y="1923" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1geikac_di" bpmnElement="Flow_role_manager">
+        <di:waypoint x="1200" y="1585" />
+        <di:waypoint x="1200" y="910" />
+        <di:waypoint x="1420" y="910" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1220" y="1153" width="80" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1047i2w_di" bpmnElement="Flow_emp_view">
+        <di:waypoint x="1560" y="2030" />
+        <di:waypoint x="2020" y="2030" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dz0cra_di" bpmnElement="Flow_view_done_emp">
+        <di:waypoint x="2160" y="2030" />
+        <di:waypoint x="2882" y="2030" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04j5zdt_di" bpmnElement="Flow_hr_action_gw">
+        <di:waypoint x="1560" y="1610" />
+        <di:waypoint x="1675" y="1610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n51aqi_di" bpmnElement="Flow_hr_add">
+        <di:waypoint x="1725" y="1610" />
+        <di:waypoint x="1965" y="1610" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1835" y="1592" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02xa2yb_di" bpmnElement="Flow_hr_view">
+        <di:waypoint x="1700" y="1585" />
+        <di:waypoint x="1700" y="1470" />
+        <di:waypoint x="1965" y="1470" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1828" y="1483" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0z569vz_di" bpmnElement="Flow_hr_edit">
+        <di:waypoint x="1700" y="1635" />
+        <di:waypoint x="1700" y="1730" />
+        <di:waypoint x="1965" y="1730" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1840" y="1703" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1akmanf_di" bpmnElement="Flow_hr_delete">
+        <di:waypoint x="1700" y="1635" />
+        <di:waypoint x="1700" y="1850" />
+        <di:waypoint x="1965" y="1850" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1833" y="1823" width="33" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0div14z_di" bpmnElement="Flow_hr_add_save">
+        <di:waypoint x="2095" y="1610" />
+        <di:waypoint x="2310" y="1610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q26bxb_di" bpmnElement="Flow_hr_edit_save">
+        <di:waypoint x="2095" y="1730" />
+        <di:waypoint x="2203" y="1730" />
+        <di:waypoint x="2203" y="1640" />
+        <di:waypoint x="2310" y="1640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05xb7pf_di" bpmnElement="Flow_hr_delete_confirm">
+        <di:waypoint x="2095" y="1850" />
+        <di:waypoint x="2203" y="1850" />
+        <di:waypoint x="2203" y="1640" />
+        <di:waypoint x="2310" y="1640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1p4d6tb_di" bpmnElement="Flow_hr_view_done">
+        <di:waypoint x="2095" y="1470" />
+        <di:waypoint x="2203" y="1470" />
+        <di:waypoint x="2203" y="1580" />
+        <di:waypoint x="2310" y="1580" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1n0syrv_di" bpmnElement="Flow_hr_done">
+        <di:waypoint x="2450" y="1610" />
+        <di:waypoint x="2882" y="1610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bedqnr_di" bpmnElement="Flow_mgr_action_gw">
+        <di:waypoint x="1560" y="910" />
+        <di:waypoint x="1675" y="910" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1pp534m_di" bpmnElement="Flow_mgr_edit">
+        <di:waypoint x="1725" y="910" />
+        <di:waypoint x="1965" y="910" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1860" y="892" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05h2q4i_di" bpmnElement="Flow_mgr_view">
+        <di:waypoint x="1700" y="885" />
+        <di:waypoint x="1700" y="760" />
+        <di:waypoint x="1965" y="760" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1858" y="773" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0201d05_di" bpmnElement="Flow_mgr_delete">
+        <di:waypoint x="1700" y="935" />
+        <di:waypoint x="1700" y="1060" />
+        <di:waypoint x="1965" y="1060" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1853" y="1033" width="33" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1oe8pa1_di" bpmnElement="Flow_mgr_report">
+        <di:waypoint x="1700" y="935" />
+        <di:waypoint x="1700" y="1210" />
+        <di:waypoint x="1965" y="1210" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1853" y="1183" width="34" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0bsqxir_di" bpmnElement="Flow_mgr_edit_save">
+        <di:waypoint x="2095" y="910" />
+        <di:waypoint x="2370" y="910" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0shf0xm_di" bpmnElement="Flow_mgr_delete_confirm">
+        <di:waypoint x="2095" y="1060" />
+        <di:waypoint x="2233" y="1060" />
+        <di:waypoint x="2233" y="930" />
+        <di:waypoint x="2370" y="930" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1yu2pif_di" bpmnElement="Flow_mgr_report_done">
+        <di:waypoint x="2095" y="1210" />
+        <di:waypoint x="2233" y="1210" />
+        <di:waypoint x="2233" y="940" />
+        <di:waypoint x="2370" y="940" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0cqba6w_di" bpmnElement="Flow_mgr_view_done">
+        <di:waypoint x="2095" y="760" />
+        <di:waypoint x="2233" y="760" />
+        <di:waypoint x="2233" y="880" />
+        <di:waypoint x="2370" y="880" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_00kzgsc_di" bpmnElement="Flow_mgr_done">
+        <di:waypoint x="2510" y="910" />
+        <di:waypoint x="2882" y="910" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Group_1vjajfd_di" bpmnElement="Task_HR_Actions">
+        <dc:Bounds x="1380" y="1390" width="1170" height="520" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1938" y="1397" width="55" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Group_00uleb9_di" bpmnElement="Group_00uleb9">
+        <dc:Bounds x="1350" y="650" width="1220" height="640" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

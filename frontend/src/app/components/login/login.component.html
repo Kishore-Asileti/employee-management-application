@@ -1,0 +1,46 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">&#128188;</div>
+      <h1>Employee Management</h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <div class="alert alert-error" *ngIf="errorMsg">
+      <span>&#9888;</span> {{ errorMsg }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" formControlName="email" placeholder="you@company.com" class="form-control"
+          [class.is-invalid]="f['email'].touched && f['email'].invalid" />
+        <div class="invalid-feedback" *ngIf="f['email'].touched && f['email'].errors?.['required']">Email is required</div>
+        <div class="invalid-feedback" *ngIf="f['email'].touched && f['email'].errors?.['email']">Enter a valid email</div>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-group">
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password"
+            placeholder="••••••" class="form-control"
+            [class.is-invalid]="f['password'].touched && f['password'].invalid" />
+          <button type="button" class="btn-toggle-pw" (click)="showPassword = !showPassword">
+            {{ showPassword ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <div class="invalid-feedback" *ngIf="f['password'].touched && f['password'].errors?.['required']">Password is required</div>
+        <div class="invalid-feedback" *ngIf="f['password'].touched && f['password'].errors?.['minlength']">At least 6 characters</div>
+      </div>
+
+      <button type="submit" class="btn-primary btn-full" [disabled]="loading || loginForm.invalid">
+        <span *ngIf="!loading">Sign In</span>
+        <span *ngIf="loading" class="spinner">&#9654;</span>
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>New employee? <a routerLink="/register">Request access</a></p>
+    </div>
+  </div>
+</div>

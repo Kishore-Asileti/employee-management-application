@@ -1,0 +1,183 @@
+<div class="dashboard-wrapper">
+  <div class="page-header">
+    <div>
+      <h1>📊 Manager Dashboard</h1>
+      <p>View and manage your team members</p>
+    </div>
+    <a [href]="camundaTasklistUrl" target="_blank" class="btn-camunda">🔗 Camunda Tasklist</a>
+  </div>
+
+  <div *ngIf="msg" class="alert" [class.alert-success]="msgType==='success'" [class.alert-error]="msgType==='error'">
+    {{ msg }}
+  </div>
+
+  <div class="tab-nav">
+    <button [class.active]="activeTab==='overview'" (click)="setTab('overview')">📊 Overview</button>
+    <button [class.active]="activeTab==='team'"     (click)="setTab('team')">👥 My Team</button>
+    <button [class.active]="activeTab==='all'"      (click)="setTab('all')">🏢 All Employees</button>
+    <button [class.active]="activeTab==='report'"   (click)="setTab('report')">📄 Report</button>
+  </div>
+
+  <!-- ── OVERVIEW ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='overview'">
+    <div class="stats-grid">
+      <div class="stat-card stat-blue">
+        <div class="stat-icon">🏢</div>
+        <div class="stat-value">{{ allEmployees.length }}</div>
+        <div class="stat-label">All Employees</div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ teamEmployees.length }}</div>
+        <div class="stat-label">My Team</div>
+      </div>
+      <div class="stat-card stat-teal">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">{{ teamActive }}</div>
+        <div class="stat-label">Team Active</div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="stat-icon">🏷️</div>
+        <div class="stat-value">{{ uniqueDepts.length }}</div>
+        <div class="stat-label">Departments</div>
+      </div>
+    </div>
+
+    <div class="card mt">
+      <div class="card-header"><h3>👥 My Team Members</h3></div>
+      <div class="empty-state" *ngIf="teamEmployees.length===0">No team members assigned yet.</div>
+      <div class="mini-list" *ngFor="let emp of teamEmployees">
+        <span class="emp-avatar">{{ emp.firstName[0] }}{{ emp.lastName[0] }}</span>
+        <div class="emp-info">
+          <span class="emp-name">{{ emp.firstName }} {{ emp.lastName }}</span>
+          <span class="emp-sub">{{ emp.designation }} · {{ emp.department }}</span>
+        </div>
+        <span class="status-badge status-{{emp.status.toLowerCase()}}">{{ emp.status }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MY TEAM ───────────────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='team'">
+    <!-- Edit panel -->
+    <div class="edit-panel" *ngIf="selectedEmployee">
+      <h3>✏️ Edit: {{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}</h3>
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <div class="form-row">
+          <div class="form-group"><label>First Name</label><input formControlName="firstName" class="form-control"/></div>
+          <div class="form-group"><label>Last Name</label><input formControlName="lastName" class="form-control"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Phone</label><input formControlName="phone" class="form-control"/></div>
+          <div class="form-group">
+            <label>Department</label>
+            <select formControlName="department" class="form-control">
+              <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Designation</label><input formControlName="designation" class="form-control"/></div>
+        <div class="btn-group">
+          <button type="submit" class="btn-primary" [disabled]="editForm.invalid">Save</button>
+          <button type="button" class="btn-secondary" (click)="selectedEmployee=null">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Designation</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let emp of teamEmployees">
+            <td>
+              <div class="emp-cell">
+                <span class="emp-avatar sm">{{ emp.firstName[0] }}{{ emp.lastName[0] }}</span>
+                {{ emp.firstName }} {{ emp.lastName }}
+              </div>
+            </td>
+            <td>{{ emp.email }}</td>
+            <td>{{ emp.department ?? '—' }}</td>
+            <td>{{ emp.designation ?? '—' }}</td>
+            <td><span class="status-badge status-{{emp.status.toLowerCase()}}">{{ emp.status }}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon btn-edit" (click)="openEdit(emp)">✏️</button>
+                <button class="btn-icon btn-del" (click)="deleteEmployee(emp.id)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="teamEmployees.length===0"><td colspan="6" class="empty-row">No team members assigned.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── ALL EMPLOYEES ─────────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='all'">
+    <div class="filter-bar">
+      <input [(ngModel)]="searchTerm" placeholder="🔍 Search..." class="search-input"/>
+      <select [(ngModel)]="filterDept" class="filter-select">
+        <option value="">All Departments</option>
+        <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let emp of filteredAll">
+            <td>
+              <div class="emp-cell">
+                <span class="emp-avatar sm">{{ emp.firstName[0] }}{{ emp.lastName[0] }}</span>
+                {{ emp.firstName }} {{ emp.lastName }}
+              </div>
+            </td>
+            <td>{{ emp.email }}</td>
+            <td>{{ emp.department ?? '—' }}</td>
+            <td><span class="role-badge role-{{emp.role.toLowerCase()}}">{{ emp.role }}</span></td>
+            <td><span class="status-badge status-{{emp.status.toLowerCase()}}">{{ emp.status }}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon btn-edit" (click)="openEdit(emp)">✏️</button>
+                <button class="btn-icon btn-del" (click)="deleteEmployee(emp.id)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filteredAll.length===0"><td colspan="6" class="empty-row">No employees found</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── REPORT ─────────────────────────────────────────────────────────────── -->
+  <div *ngIf="activeTab==='report'">
+    <div class="card" *ngIf="report">
+      <div class="card-header">
+        <h3>📄 Team Report</h3>
+        <span class="text-muted">Generated: {{ report.generatedAt }}</span>
+      </div>
+      <div class="stats-grid mt">
+        <div class="stat-card stat-blue"><div class="stat-value">{{ report.totalTeam }}</div><div class="stat-label">Total Team</div></div>
+        <div class="stat-card stat-green"><div class="stat-value">{{ report.active }}</div><div class="stat-label">Active</div></div>
+        <div class="stat-card stat-orange"><div class="stat-value">{{ report.pending }}</div><div class="stat-label">Pending</div></div>
+        <div class="stat-card stat-red"><div class="stat-value">{{ report.inactive }}</div><div class="stat-label">Inactive</div></div>
+      </div>
+      <div class="table-wrap mt">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Designation</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let emp of report.employees">
+              <td>{{ emp.firstName }} {{ emp.lastName }}</td>
+              <td>{{ emp.email }}</td>
+              <td>{{ emp.department }}</td>
+              <td>{{ emp.designation }}</td>
+              <td><span class="status-badge status-{{emp.status.toLowerCase()}}">{{ emp.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="loading-state" *ngIf="!report">Generating report...</div>
+  </div>
+</div>

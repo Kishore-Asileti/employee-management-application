@@ -1,0 +1,26 @@
+<nav class="navbar" *ngIf="auth.isLoggedIn">
+  <div class="nav-brand">
+    <span class="logo">&#128188;</span>
+    <span class="brand-name">EMP Manager</span>
+  </div>
+
+  <div class="nav-links">
+    <a *ngIf="auth.isHR" routerLink="/hr-dashboard" routerLinkActive="active">HR Dashboard</a>
+    <a *ngIf="auth.isManager" routerLink="/manager-dashboard" routerLinkActive="active">Manager Dashboard</a>
+    <a routerLink="/employee-dashboard" routerLinkActive="active">My Profile</a>
+  </div>
+
+  <div class="nav-right">
+    <span class="role-badge role-{{auth.currentUser?.role?.toLowerCase()}}">
+      {{ auth.currentUser?.role }}
+    </span>
+    <span class="user-name">{{ auth.currentUser?.fullName }}</span>
+    <button class="btn-tasklist" (click)="openTasklist()" title="Camunda Tasklist">
+      &#9776; Tasklist
+    </button>
+    <button *ngIf="auth.isHR" class="btn-cockpit" (click)="openCockpit()" title="Camunda Cockpit">
+      &#9881; Cockpit
+    </button>
+    <button class="btn-logout" (click)="logout()">Logout</button>
+  </div>
+</nav>
