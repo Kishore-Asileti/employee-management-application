@@ -1,6 +1,10 @@
 # Employee Management System
 
-A full-stack application based on the `employee_management_application.bpmn` process, built with:
+⚠️ License Notice:
+This project is NOT open-source for reuse.
+Please contact me before using any part of the code.
+  
+=> A full-stack application based on the `employee_management_application.bpmn` process, built with:
 
 - **Backend**: Spring Boot 3.2 · Camunda BPM 7.20 · Couchbase · Maven · JWT Security
 - **Frontend**: Angular 17 · Reactive Forms · Role-based routing
